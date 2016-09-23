@@ -24,6 +24,44 @@ def fitness(indiv):
 
     return fit
 
+class ProgressPrinter:
+    def __init__(self, start, end, steps, step_chars='#.', edge_chars='[]'):
+        self.start = start
+        self.end = end
+        self.steps = steps
+
+        self.step_chars = step_chars
+        self.edge_chars = edge_chars
+
+        self.current = self.start
+
+        sys.stdout.write(self.edge_chars[0] +
+                         self.step_chars[1] * self.steps +
+                         self.edge_chars[1])
+        sys.stdout.flush()
+
+    def set_progress(self, pt):
+        self.current = val
+
+    def add_progress(self, val):
+        self.current += val
+
+    def update_printout(self):
+        sys.stdout.write('\b' * (self.steps + 2))
+
+        vals_per_step = (self.end - self.start) // self.steps
+
+        steps_completed = self.current // vals_per_step
+        steps_not_done = self.steps - steps_completed
+
+        assert steps_completed + steps_not_done == self.steps
+
+        sys.stdout.write(self.edge_chars[0] +
+                         self.step_chars[0] * steps_completed +
+                         self.step_chars[1] * steps_not_done +
+                         self.edge_chars[1])
+        sys.stdout.flush()
+
 if __name__ == '__main__':
     # Create the initial species
     rand_source = np.random.bytes(weight_dtype.itemsize *

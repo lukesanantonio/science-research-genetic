@@ -1,0 +1,93 @@
+= Research Plan
+Luke San Antonio Bialecki
+
+
+== Rationale
+
+Genetic algorithms solve problems by evolving solutions over many iterations
+using a quantitative measure of "fitness". Over time, the solutions converge to
+one that maximizes the fitness function. Genetic programming is the extension of
+this idea whereby computer programs themselves are the solutions. In this case,
+we'll be exploring the use of genetically evolved computer programs for
+procedural generation. Despite being a very subtle and artistic application of
+computer programming, the task is often given to a programmer who must use
+unintuitive hacks to get the job done. This experiment assumes that a genetic
+algorithm _can_, in fact, produce a genetic program that is effective and
+generic enough to converge at a satisfactory program. Therefore, this experiment
+will explore the effectiveness of different _primitive sets_, and other
+implementation details of the genetic algorithm itself, for example the the cost
+function and how exactly to go about combining two programs during crossover. If
+successful, the experiment will allow artists to create procedurally generated
+environments without worrying about implementation, which can be far beyond
+trivial and sometimes unintuitive.
+
+== Research Question
+How can genetic programming best be implemented to produce functions capable of
+procedural generation in a 3D voxel world?
+
+== Hypothesis
+
+With careful management of type-safety when crossing over and mutating programs,
+they will converge on a solution. However, that solution might not be close
+enough to an artist's desired solution to make the method applicable as a way to
+generate and deploy procedural content.
+
+== Engineering Goals
+. To use machine learning to produce interesting and possibly unique
+procedurally generated content.
+. To explore genetic programming for problems best solved with generalization
+(rather than finding a definitive solution; in our case, that solution doesn't
+exist, it is only a set of rules that make the program do what we want).
+. To find a good balance between objective cost and interactive cost in order to
+best quantify genetic programs.
+
+== Expected Outcomes
+
+Genetic programming, given consistent interactive feedback will produce a
+consistent result. Due to a limited nature of the representation and style of
+execution, however, the programs will take too long to run to be an effective
+means of deploying procedural generation in most software, such as video games.
+
+== Procedures
+. Develop a _primitive set_ for procedural generation programs.
+. Decide how to execute the programs in order to change the voxel world.
+. Develop the implementation of a genetic algorithm.
+. Test results / genetic algorithm
+. Consider parsing Lisp code to seed the initial program generation.
+. Modify crossover and mutation operators
+. Look at how quickly the algorithm converges on a solution
+. Apply samples of programs from the final generation step and judge their
+effectiveness. Is the result consistent? Does it furfill the specific (though
+implicit) requirements that are valued by the artist?
+. Investigate the effect of changing the objective cost function.
+. Repeat from step 3.
+
+
+== Risks and Safety
+There are no risks or safety issues associated with the experiment.
+
+== References
+
+Cook, T. E. (2007). Gauguin : Generating Art Using Genetic Algorithms & User
+Input Naturally. Retrieved November 12, 2016, from
+http://digitalcommons.colby.edu/honorstheses/270/
+
+Cummins, C. (n.d.). Grow Your Own Picture Genetic Algorithms & Generative Art.
+Retrieved November 11, 2016, from http://chriscummins.cc/s/genetics/
+
+Haupt, R. L., & Haupt, S. E. (2004). Practical Genetic Algorithms. Hoboken,
+N.J.: Wiley-Interscience.
+
+Poli, R., Langdon, W. B., McPhee, N. F., & Koza, J. R. (2008). A Field Guide to
+Genetic Programming.
+
+Arata, H., Takai, Y., Takai, N., & Yamamoto, T. (1999). Free-form shape modeling
+by 3D cellular automata. Proceedings Shape Modeling International '99.
+International Conference on Shape Modeling and Applications.
+doi:10.1109/sma.1999.749346
+
+== Additional Requirements
+. Human participants: N/A
+. Vertebrate animal research: N/A
+. Potentially hazardous biological agents research: N/A
+. Hazardous chemicals, activities and devices: N/A

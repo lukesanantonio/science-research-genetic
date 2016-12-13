@@ -18,7 +18,7 @@ class TerminalExistsError(AlreadyExistsError):
     def __init__(self, name):
         super().__init__(name + ' terminal')
 
-class FuncDelegator:
+class FunctionDelegator:
     def __init__(self):
         self._func_map = {}
 
@@ -40,10 +40,8 @@ class FuncDelegator:
 
         return fn
 
-    def evaluate(self):
-        pass
 
-delegate = FuncDelegator()
+delegate = FunctionDelegator()
 
 @delegate.def_func("rand")
 def rand(start=None, end=None):

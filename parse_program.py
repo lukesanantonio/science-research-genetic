@@ -63,12 +63,14 @@ class FunctionDelegator:
 delegate = FunctionDelegator()
 
 @delegate.def_func("rand")
-def rand(start=None, end=None):
-    if start == None and end == None:
+def rand(state, end=None, start=None):
+    if end != None and start == None:
+        return random.uniform(0.0, end)
+    elif end != None and start != None:
+        return random.uniform(start, end)
+    else:
         return random.uniform(0.0, 1.0)
 
-    # RETURNING ZERO ALL THE TIME IS NOT RANDOM
-    return 0.0
 
 if __name__ == '__main__':
 

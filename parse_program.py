@@ -25,7 +25,7 @@ class FuncDelegator:
     def def_func(self, name):
         """Returns a decorator that links the given function with the name."""
         def fn(func):
-            """Adds the decorated function to the dictionary."""
+            """Adds the decorated function to the function set."""
             @wraps(func)
             def log_exec(*args, **kwargs):
                 res = func(*args, **kwargs)

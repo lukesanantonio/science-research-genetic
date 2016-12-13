@@ -21,6 +21,7 @@ class TerminalExistsError(AlreadyExistsError):
 class FunctionDelegator:
     def __init__(self):
         self._func_map = {}
+        self._term_map = {}
 
     def def_func(self, name):
         """Returns a decorator that links the given function with the name."""
@@ -40,6 +41,24 @@ class FunctionDelegator:
 
         return fn
 
+    def def_terminal(self, name):
+        """Returns a decorator that links a terminal to a getter function."""
+        def fn(func):
+            """Adds a terminal to the terminal set."""
+
+            @wraps(func)
+            def log_exec(*args, **kwargs):
+                res = func(*args, **kwargs)
+                print('Querying', name, '(value =', str(res), ')')
+                return res
+
+            if name in self._term_map:
+                raise TerminalExistsError(name)
+
+            self._term_map[name] = log_exec
+            return func
+
+        return fn
 
 delegate = FunctionDelegator()
 

@@ -3,9 +3,20 @@ import pprint
 from functools import wraps
 import random
 
-class ExistingFunction(Exception):
-    def __init__(self):
-        pass
+class AlreadyExistsError(Exception):
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return "{} already exists".format(self.name)
+
+class FunctionExistsError(AlreadyExistsError):
+    def __init__(self, name):
+        super().__init__(name + ' function')
+
+class TerminalExistsError(AlreadyExistsError):
+    def __init__(self, name):
+        super().__init__(name + ' terminal')
 
 class FuncDelegator:
     def __init__(self):
@@ -22,7 +33,7 @@ class FuncDelegator:
                 return res
 
             if name in self._func_map:
-                raise KeyError('{} already exists'.format(name))
+                raise FunctionExistsError(name)
 
             self._func_map[name] = log_exec
             return func

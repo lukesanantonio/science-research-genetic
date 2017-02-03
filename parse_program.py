@@ -12,6 +12,7 @@ class AlreadyExistsError(Exception):
     def __str__(self):
         return "{} already exists".format(self.name)
 
+
 class FunctionExistsError(AlreadyExistsError):
     def __init__(self, name):
         super().__init__(name + ' function')
@@ -27,8 +28,10 @@ class FunctionDelegator:
 
     def def_func(self, name):
         """Returns a decorator that links the given function with the name."""
+
         def fn(func):
             """Adds the decorated function to the function set."""
+
             @wraps(func)
             def log_exec(*args, **kwargs):
                 res = func(*args, **kwargs)
@@ -45,6 +48,7 @@ class FunctionDelegator:
 
     def def_terminal(self, name):
         """Returns a decorator that links a terminal to a getter function."""
+
         def fn(func):
             """Adds a terminal to the terminal set."""
 
@@ -84,29 +88,36 @@ def curstate_term(state):
 def abspos_y_term(state):
     return state.abspos_x
 
+
 @delegate.def_terminal("abspos_y")
 def abspos_y_term(state):
     return state.abspos_y
+
 
 @delegate.def_terminal("abspos_z")
 def abspos_z_term(state):
     return state.abspos_z
 
+
 @delegate.def_terminal("gridsize_x")
 def gridsize_x_term(state):
     return state.gridsize_x
+
 
 @delegate.def_terminal("gridsize_y")
 def gridsize_y_term(state):
     return state.gridsize_y
 
+
 @delegate.def_terminal("gridsize_z")
 def gridsize_z_term(state):
     return state.gridsize_z
 
+
 @delegate.def_terminal('pi')
 def pi_term(state):
     return math.pi
+
 
 @delegate.def_func('uniform')
 def rand(state, end=None, start=None):
@@ -117,13 +128,16 @@ def rand(state, end=None, start=None):
     else:
         return random.uniform(0.0, 1.0)
 
+
 @delegate.def_func('sin')
 def sin(state, val):
     return math.sin(val)
 
+
 @delegate.def_func('if')
 def rand(state, cond, first, second):
     return first if cond else second
+
 
 @delegate.def_func('<')
 def less_than(state, left, right):
@@ -134,13 +148,16 @@ def less_than(state, left, right):
 def multiply(state, left, right):
     return left * right
 
+
 @delegate.def_func('/')
 def divide(state, left, right):
     return left / right
 
+
 @delegate.def_func('+')
 def add(state, left, right):
     return left + right
+
 
 @delegate.def_func('-')
 def minus(state, left, right=None):
@@ -149,9 +166,11 @@ def minus(state, left, right=None):
     else:
         return left - right
 
+
 @delegate.def_func('do')
 def do(state, *vals):
     return vals[-1]
+
 
 @delegate.def_func('set')
 def set(state, val):
@@ -163,6 +182,7 @@ def set(state, val):
 
     state.data[state.abspos_x][state.abspos_y][state.abspos_z] = val
     return val
+
 
 @delegate.def_func('move')
 def move(state, dx, dy, dz):

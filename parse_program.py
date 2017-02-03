@@ -21,6 +21,25 @@ class TerminalExistsError(AlreadyExistsError):
     def __init__(self, name):
         super().__init__(name + ' terminal')
 
+
+class InvalidPrimitive(Exception):
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return "{} is not valid".format(self.name)
+
+
+class InvalidFunction(Exception):
+    def __init__(self, name):
+        super(self).__init__(name + ' function')
+
+
+class InvalidTerminal(Exception):
+    def __init__(self, name):
+        super(self).__init__(name + ' terminal')
+
+
 class FunctionDelegator:
     def __init__(self):
         self.func_map = {}
@@ -191,19 +210,9 @@ def move(state, dx, dy, dz):
     state.abspos_z += dz
     return None
 
-class UnknownFunctionError(Exception):
-    def __init__(self, func):
-        self.func = func
 
-    def __str__(self):
-        return "unknown function '{}'".format(self.func)
 
-class UnknownTerminalError(Exception):
-    def __init__(self, func):
-        self.func = func
 
-    def __str__(self):
-        return "unknown terminal '{}'".format(self.func)
 
 def eval_lisp(code, state, delegate):
     if isinstance(code, list):

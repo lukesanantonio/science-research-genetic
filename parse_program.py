@@ -102,7 +102,8 @@ delegate = FunctionDelegator()
 
 @delegate.def_terminal("curstate")
 def curstate_term(state):
-    return self.data[state.abspos_x][state.abspos_y][state.abspos_z]
+    return state.data[state.abspos_x][state.abspos_y][state.abspos_z]
+
 
 @delegate.def_terminal("abspos_x")
 def abspos_y_term(state):

@@ -154,7 +154,7 @@ def sin(state, val):
 
 
 @delegate.def_func('if')
-def rand(state, cond, first, second):
+def if_func(state, cond, first, second):
     return first if cond else second
 
 

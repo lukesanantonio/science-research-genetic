@@ -15,11 +15,12 @@ class AlreadyExistsError(Exception):
 
 class FunctionExistsError(AlreadyExistsError):
     def __init__(self, name):
-        super().__init__(name + ' function')
+        super(self).__init__(name + ' function')
+
 
 class TerminalExistsError(AlreadyExistsError):
     def __init__(self, name):
-        super().__init__(name + ' terminal')
+        super(self).__init__(name + ' terminal')
 
 
 class InvalidPrimitive(Exception):

@@ -3,7 +3,10 @@ import pprint
 from functools import wraps
 import random
 import numpy as np
+import functools
 import math
+from inspect import signature
+
 
 class AlreadyExistsError(Exception):
     def __init__(self, name):
@@ -41,7 +44,7 @@ class InvalidTerminal(Exception):
         super(self).__init__(name + ' terminal')
 
 
-class FunctionDelegator:
+class PrimitiveDelegate:
     def __init__(self):
         self.func_map = {}
         self.term_map = {}
@@ -86,6 +89,77 @@ class FunctionDelegator:
 
         return fn
 
+    # Both function and terminals
+    def is_primitive(self, prim):
+        return self.is_terminal(prim) or self.is_function(prim)
+
+    def pick_random_primitive(self):
+        keys = list(self.func_map.keys())
+        keys.extend(self.term_map.keys())
+        return random.choice(keys)
+
+    # Functions
+    def is_function(self, func):
+        return True if func in self.func_map else False
+
+    def pick_random_function(self):
+        return random.choice(list(self.func_map.keys()))
+
+    def get_function_signature(self, name):
+        if not self.is_function(name):
+            raise InvalidFunction(name)
+        return signature(self.func_map[name])
+
+    # Terminals
+    def is_terminal(self, term):
+        return True if term in self.term_map else False
+
+    def pick_random_terminal(self):
+        return random.choice(list(self.term_map.keys()))
+
+    def eval_list(self, code, state):
+        if isinstance(code, list):
+            func_name = code[0]
+            if func_name not in self.func_map:
+                # Rip, bad function
+                raise InvalidFunction(func_name)
+
+            func = self.func_map[func_name]
+
+            def eval_cur_lisp(dsl):
+                return self.eval_list(dsl, state)
+
+            # Evaluate parameters
+            params = list(map(eval_cur_lisp, code[1:]))
+
+            # Evaluate function
+            return func(state, *params)
+
+        elif isinstance(code, str):
+            # Try parsing true or false
+            if code == 'true':
+                return True
+            elif code == 'false':
+                return False
+
+            # Try parsing an integer
+            try:
+                val = int(code)
+            except ValueError:
+                val = None
+
+            if val is not None:
+                return val
+
+            # Try resolving a terminal reference.
+            # Make sure the string is a valid terminal
+            if code not in self.term_map:
+                raise InvalidTerminal(code)
+
+            # Evaluate the terminal at this time.
+            return self.term_map[code](state)
+
+
 class ProceduralState:
     def __init__(self, sizex, sizey, sizez):
         self.abspos_x = 0
@@ -98,7 +172,9 @@ class ProceduralState:
         # The actual grid
         self.data = np.zeros((sizex, sizey, sizez), dtype=bool)
 
-delegate = FunctionDelegator()
+
+delegate = PrimitiveDelegate()
+
 
 @delegate.def_terminal("curstate")
 def curstate_term(state):
@@ -209,60 +285,113 @@ def set(state, val):
 
 
 @delegate.def_func('move')
-def move(state, dx, dy, dz):
+def move(state, dx, dy, dz) -> None:
     state.abspos_x += dx
     state.abspos_y += dy
     state.abspos_z += dz
+
+
+class HyperParameters:
+    selection_dist = [0.3, 0.3, 0.4]
+
+
+def pick_random_node(graph):
+    """Returns a random node via list and index.
+
+    This allows the node to modified in-place, however the root node will never
+    be chosen.
+    """
+
+    # Pick a node, but not the first one
+    node_i = random.randrange(1, len(graph))
+
+    if isinstance(graph[node_i], list):
+        # If this node is a list, decide randomly whether to traverse it or not
+        use_this_node = random.choice([True, False])
+        return (graph, node_i) if use_this_node else pick_random_node(
+            graph[node_i])
+    else:
+        # We can't traverse it so return it
+        return graph, node_i
+
+
+def swap_nodes(pick1, pick2):
+    """Swap the values of two chosen sub-graphs.
+
+    Params are expected to be a list-index pair."""
+    tmp = pick1[0][(pick1[1])]
+    pick1[0][(pick1[1])] = pick2[0][(pick2[1])]
+    pick2[0][(pick2[1])] = tmp
+
+
+def weighted_choice(arr):
+    # Each item should be a tuple with probabilities as the second element
+    total_prob = functools.reduce(lambda total, tup: total + tup[1], arr, 0)
+
+    choice = random.uniform(0.0, total_prob)
+
+    cur_sum = 0.0
+    for item in arr:
+        cur_sum += item[1]
+        if choice < cur_sum:
+            return item[0]
+
+    # This will only occur when total_prob is 0
     return None
 
 
+# Instead of worrying about none functions (and figuring out if the none will
+# propagate up), just let it happen and penalize the program when None is
+# passed to a function that it shouldn't.
+
+def pick_node(hparams, dgt, function_allowed=True):
+    # We can always pick either a terminal or constant, to varying degrees of
+    # probability.
+    choices = [(dgt.pick_random_terminal(), hparams.selection_dist[1]),
+               (random.getrandbits(8), hparams.selection_dist[2] / 2),
+               (random.uniform(0.0, 1.0), hparams.selection_dist[2] / 2)]
+
+    # We can only select a function if we have room depth-wise
+    if function_allowed:
+        choices.append((dgt.pick_random_function(), hparams.selection_dist[0]))
+
+    return weighted_choice(choices)
 
 
+def generate_random_program(hparams, dgt: PrimitiveDelegate, max_depth=4,
+                            cur_depth=0):
+    # Only allow None functions to run at the top level
+    prim = pick_node(hparams, dgt, cur_depth <= max_depth)
 
-def eval_lisp(code, state, delegate):
-    if isinstance(code, list):
-        func_name = code[0]
-        if func_name not in delegate.func_map:
-            # Rip, bad function
-            raise UnknownFunctionError(func_name)
+    if not dgt.is_function(prim):
+        # We aren't dealing with anything that needs children parameters.
+        return prim
 
-        func = delegate.func_map[func_name]
+    # This is our program
+    ret = [prim]
 
-        def eval_cur_lisp(code):
-            return eval_lisp(code, state, delegate)
+    # Figure out parameters and generate a sub-program for each
+    sig = dgt.get_function_signature(prim)
+    for param_i in range(len(sig.parameters) - 1):
+        # Use type information in annotations of parameter, maybe?
+        ret.append(generate_random_program(hparams, dgt, max_depth,
+                                           cur_depth + 1))
 
-        # Evaluate parameters
-        params = list(map(eval_cur_lisp, code[1:]))
-
-        # Evaluate function
-        return func(state, *params)
-
-    elif isinstance(code, str):
-        # Try parsing true or false
-        if code == 'true':
-            return True
-        elif code == 'false':
-            return False
-
-        # Try parsing an integer
-        try:
-            val = int(code)
-        except ValueError:
-            val = None
-
-        if val != None:
-            return val
-
-        # Try resolving a terminal reference.
-        # Make sure the string is a valid terminal
-        if code not in delegate.term_map:
-            raise UnknownTerminalError(code)
-
-        # Evaluate the terminal at this time.
-        return delegate.term_map[code](state)
+    return ret
 
 
-RUNS=1000
+def crossover(g1, g2):
+    """Crossover two graphs at some random point at their respective graphs."""
+    n1_pick = pick_random_node(g1)
+    print(n1_pick)
+
+    n2_pick = pick_random_node(g2)
+    print(n2_pick)
+
+    swap_nodes(n1_pick, n2_pick)
+
+
+RUNS = 1000
 
 if __name__ == '__main__':
 
@@ -271,9 +400,13 @@ if __name__ == '__main__':
     dsl.ignore(comment)
 
     prog = dsl.parseString(open('initial_seed.lisp', 'r').read()).asList()[0]
-    pprint.pprint(prog, indent=4, width=40)
+
+    for i in range(3):
+        newprog = generate_random_program(HyperParameters(), delegate)
+        pprint.pprint(newprog, indent=4, width=40)
 
     state = ProceduralState(10, 10, 10)
 
     for i in range(RUNS):
-        eval_lisp(prog, state, delegate)
+        # delegate.eval_list(prog, state)
+        pass

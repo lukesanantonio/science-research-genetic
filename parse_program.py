@@ -140,9 +140,9 @@ def pi_term(state):
 
 @delegate.def_func('uniform')
 def rand(state, end=None, start=None):
-    if end != None and start == None:
+    if end is not None and start is None:
         return random.uniform(0.0, end)
-    elif end != None and start != None:
+    elif end is not None and start is not None:
         return random.uniform(start, end)
     else:
         return random.uniform(0.0, 1.0)
@@ -160,8 +160,11 @@ def if_func(state, cond, first, second):
 
 @delegate.def_func('<')
 def less_than(state, left, right):
-    if left < right: return True
-    else: return False
+    if left < right:
+        return True
+    else:
+        return False
+
 
 @delegate.def_func('*')
 def multiply(state, left, right):
@@ -180,7 +183,7 @@ def add(state, left, right):
 
 @delegate.def_func('-')
 def minus(state, left, right=None):
-    if right == None:
+    if right is None:
         return 1 - left
     else:
         return left - right
@@ -194,8 +197,8 @@ def do(state, *vals):
 @delegate.def_func('set')
 def set(state, val):
     if (state.abspos_x < 0 or state.gridsize_x < state.abspos_x or
-        state.abspos_y < 0 or state.gridsize_y < state.abspos_y or
-        state.abspos_z < 0 or state.gridsize_z < state.abspos_z):
+                state.abspos_y < 0 or state.gridsize_y < state.abspos_y or
+                state.abspos_z < 0 or state.gridsize_z < state.abspos_z):
         # The position is out of bounds
         return val
 

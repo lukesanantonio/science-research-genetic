@@ -399,14 +399,17 @@ if __name__ == '__main__':
     comment = (';' + pp.restOfLine).suppress()
     dsl.ignore(comment)
 
-    prog = dsl.parseString(open('initial_seed.lisp', 'r').read()).asList()[0]
+    #prog = dsl.parseString(open('initial_seed.lisp', 'r').read()).asList()[0]
 
-    for i in range(3):
-        newprog = generate_random_program(HyperParameters(), delegate)
-        pprint.pprint(newprog, indent=4, width=40)
+    # Generate a new program
+    prog = generate_random_program(HyperParameters(), delegate)
 
+    # Print it
+    pprint.pprint(prog, indent=4, width=40)
+
+    # Create a new voxel world to run it in
     state = ProceduralState(10, 10, 10)
 
     for i in range(RUNS):
-        # delegate.eval_list(prog, state)
-        pass
+        # Run the program a few times in the voxel world.
+        delegate.eval_list(prog, state)

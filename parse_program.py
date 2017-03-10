@@ -7,6 +7,8 @@ import functools
 import math
 from inspect import signature
 
+import unittest
+
 
 class AlreadyExistsError(Exception):
     def __init__(self, name):
@@ -408,6 +410,19 @@ def crossover(g1, g2):
 
     swap_nodes(n1_pick, n2_pick)
 
+
+class TestEval(unittest.TestCase):
+    def setUp(self):
+        self.state = ProceduralState(10, 10, 10)
+
+    def test_eval(self):
+        res, errors = delegate.eval_list(['+', 5, None], self.state)
+        self.assertIsNone(res)
+        self.assertEqual(1, len(errors))
+
+        res, errors = delegate.eval_list(['+', 5, 10], self.state)
+        self.assertEqual(15, res)
+        self.assertEqual(0, len(errors))
 
 RUNS = 1000
 

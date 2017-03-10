@@ -118,6 +118,10 @@ class PrimitiveDelegate:
         return random.choice(list(self.term_map.keys()))
 
     def eval_list(self, code, state):
+        """Returns the evaluated value and list of errors as a tuple."""
+        if code is None:
+            return None, []
+
         if isinstance(code, list):
             func_name = code[0]
             if func_name not in self.func_map:
@@ -129,18 +133,32 @@ class PrimitiveDelegate:
             def eval_cur_lisp(dsl):
                 return self.eval_list(dsl, state)
 
+            # Collect errors
+            errs = []
+
             # Evaluate parameters
-            params = list(map(eval_cur_lisp, code[1:]))
+            results = list(map(eval_cur_lisp, code[1:]))
+            params = []
+            for res in results:
+                params.append(res[0])
+                errs.extend(res[1])
 
             # Evaluate function
-            return func(state, *params)
+            try:
+                return func(state, *params), errs
+            except TypeError as e:
+                errs.append(e)
+                # On error, we don't have another value
+                return None, errs
 
+        elif isinstance(code, int):
+            return code, []
         elif isinstance(code, str):
             # Try parsing true or false
             if code == 'true':
-                return True
+                return True, []
             elif code == 'false':
-                return False
+                return False, []
 
             # Try parsing an integer
             try:
@@ -149,7 +167,7 @@ class PrimitiveDelegate:
                 val = None
 
             if val is not None:
-                return val
+                return val, []
 
             # Try resolving a terminal reference.
             # Make sure the string is a valid terminal
@@ -157,7 +175,7 @@ class PrimitiveDelegate:
                 raise InvalidTerminal(code)
 
             # Evaluate the terminal at this time.
-            return self.term_map[code](state)
+            return self.term_map[code](state), []
 
 
 class ProceduralState:

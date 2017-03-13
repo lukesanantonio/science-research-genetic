@@ -60,7 +60,6 @@ class PrimitiveDelegate:
             @wraps(func)
             def log_exec(*args, **kwargs):
                 res = func(*args, **kwargs)
-                print('Running', name, '(result =', str(res), ')')
                 return res
 
             if name in self.func_map:
@@ -80,7 +79,6 @@ class PrimitiveDelegate:
             @wraps(func)
             def log_exec(*args, **kwargs):
                 res = func(*args, **kwargs)
-                print('Querying', name, '(value =', str(res), ')')
                 return res
 
             if name in self.term_map:

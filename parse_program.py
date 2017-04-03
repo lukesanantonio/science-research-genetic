@@ -151,8 +151,6 @@ class PrimitiveDelegate:
                 # On error, we don't have another value
                 return None, errs
 
-        elif isinstance(code, int):
-            return code, []
         elif isinstance(code, str):
             # Try parsing true or false
             if code == 'true':
@@ -176,6 +174,8 @@ class PrimitiveDelegate:
 
             # Evaluate the terminal at this time.
             return self.term_map[code](state), []
+        else:
+            return code, []
 
 
 class ProceduralState:

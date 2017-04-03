@@ -311,6 +311,7 @@ def move(state, dx, dy, dz) -> None:
 
 class HyperParameters:
     selection_dist = [0.3, 0.3, 0.4]
+    max_depth=6
 
 
 def pick_random_node(graph):
@@ -376,10 +377,10 @@ def pick_node(hparams, dgt, function_allowed=True):
     return weighted_choice(choices)
 
 
-def generate_random_program(hparams, dgt: PrimitiveDelegate, max_depth=4,
+def generate_random_program(hparams, dgt: PrimitiveDelegate,
                             cur_depth=0):
     # Only allow None functions to run at the top level
-    prim = pick_node(hparams, dgt, cur_depth <= max_depth)
+    prim = pick_node(hparams, dgt, cur_depth <= hparams.max_depth)
 
     if not dgt.is_function(prim):
         # We aren't dealing with anything that needs children parameters.
@@ -392,8 +393,7 @@ def generate_random_program(hparams, dgt: PrimitiveDelegate, max_depth=4,
     sig = dgt.get_function_signature(prim)
     for param_i in range(len(sig.parameters) - 1):
         # Use type information in annotations of parameter, maybe?
-        ret.append(generate_random_program(hparams, dgt, max_depth,
-                                           cur_depth + 1))
+        ret.append(generate_random_program(hparams, dgt, cur_depth + 1))
 
     return ret
 

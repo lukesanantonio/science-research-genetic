@@ -310,7 +310,7 @@ def move(state, dx, dy, dz) -> None:
 
 
 class HyperParameters:
-    selection_dist = [0.3, 0.3, 0.4]
+    selection_dist = [0.5, 0.25, 0.25]
     max_depth=6
 
 
